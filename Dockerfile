@@ -1,21 +1,27 @@
 FROM ubuntu:18.04
-LABEL maintainer="Teppei Fujisawa <fujisawa@symbol.company>"
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LC_ALL=C.UTF-8 LANG=C.UTF-8 LANGUAGE=C:en
+LABEL maintainer="Teppei Fujisawa <fujisawa@symbol.company>, Hayashi Toshiaki <hayashi@symbol.company>"
+ENV DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 LANG=C.UTF-8 LANGUAGE=C:en
+SHELL ["/bin/bash", "-c"]
 
-RUN apt update -y && apt upgrade -y
+RUN apt update && apt install --no-install-recommends -y gcc-8 g++-8 && rm -rf /var/lib/apt/lists/
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 80 --slave /usr/bin/g++ g++ /usr/bin/g++-8
 
-RUN apt install -y python3 python3-pip python3-venv ca-certificates tar gzip curl
+RUN apt update && apt install -y --no-install-recommends make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
+  wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl git ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
-# use gcc 8 for full c++14 function
-RUN apt install -y gcc-8 g++-8 && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 80 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+RUN curl https://pyenv.run | bash
+ENV PATH /root/.pyenv/shims:/root/.pyenv/bin:$PATH
 
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-RUN update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+ENV PYTHON_VERSION 3.6.10
+RUN pyenv install ${PYTHON_VERSION}
+RUN echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+RUN echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
+RUN pyenv global ${PYTHON_VERSION}
+RUN pyenv local ${PYTHON_VERSION}
 
-# update keyrings.alt for poetry bug
-RUN pip install -U keyrings.alt
+# Upgrade pip
+ENV PIP_MAJOR_VERSION 20.0.0
+RUN pip install --upgrade pip~=${PIP_MAJOR_VERSION}
 
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
-ENV PATH /root/.poetry/bin:$PATH
-
+ENTRYPOINT ["bash"]
