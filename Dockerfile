@@ -14,7 +14,7 @@ RUN apt update && apt install -y --no-install-recommends make build-essential li
 RUN curl https://pyenv.run | bash
 ENV PATH /root/.pyenv/shims:/root/.pyenv/bin:$PATH
 
-ENV PYTHON_VERSION 3.6.10
+ENV PYTHON_VERSION 3.8.0
 RUN pyenv install ${PYTHON_VERSION}
 RUN echo 'eval "$(pyenv init -)"' >> ~/.bashrc
 RUN echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
